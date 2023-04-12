@@ -3,6 +3,9 @@ on:
   - workflow_dispatch
   - push
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-20.04
