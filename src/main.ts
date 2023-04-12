@@ -20,7 +20,7 @@ Alpine.store('data', {
   // 音乐列表
   musicList: [],
 
-  currentPlayIndex: 0,
+  currentPlayIndex: Alpine.$persist(-1).as('x-listening'),
 
   // 是否暂停播放. chrome 不允许自动播放, 无需持久化此状态
   paused: true,
@@ -36,8 +36,6 @@ Alpine.store('data', {
   cursor: Alpine.$persist(0).as('x-cursor'),
   // 当前音乐的总时长
   duration: 0,
-  // 当前播放进度
-  progress: Alpine.$persist(0).as('x-progress'),
 
   // 音量: [0-1]
   volume: Alpine.$persist(1).as('x-volume'),
@@ -70,26 +68,40 @@ Alpine.store('data', {
       this.volume = 1
     }
 
+    this.player.volume = this.getVolume()
+    this.volume = this.player.volume
+
     this.player.ontimeupdate = () => {
       this.cursor = this.player.currentTime
       if (this.duration > 0) {
-        this.progress = (this.cursor * 100) / this.duration
         if (this.cursor === this.duration) {
           this.playNext()
         }
       }
     }
 
-    // 开始播放时获取新音乐的时长
-    this.player.onplay = () => {
-      // this.cursor = 0
+    this.player.ondurationchange = () => {
       console.log(`duration ${this.player.duration}`)
       this.duration = this.player.duration
     }
 
-    this.player.muted = this.muted
-    this.player.volume = this.getVolume()
-    this.player.pause()
+    this.player.onvolumechange = () => {
+      console.log(`volume ${this.player.volume}`)
+      if (this.volume) {
+        this.preVolume = this.volume
+      }
+      this.volume = this.player.volume
+    }
+
+    this.player.onplaying = () => {
+      this.paused = false
+      console.log(`paused: ${this.paused}`)
+    }
+
+    this.player.onpause = () => {
+      this.paused = true
+      console.log(`paused: ${this.paused}`)
+    }
 
     this.player.currentTime = this.cursor
 
@@ -108,32 +120,44 @@ Alpine.store('data', {
         this.musicList = musicList
       }
 
-      if (this.currentPlayIndex >= 0) {
+      if (this.musicList?.length > 0) {
+        if (
+          !(
+            this.currentPlayIndex >= 0 &&
+            this.currentPlayIndex < this.musicList.length
+          )
+        ) {
+          this.currentPlayIndex = 0
+        }
+
         this.current = this.musicList[this.currentPlayIndex]
+        this.player.load()
+      } else {
+        this.currentPlayIndex = -1
       }
     }
+
+    console.log(`set pause`)
+    this.player.pause()
+    this.player.autoplay = true
   },
 
   togglePaused() {
-    this.paused = !this.paused
-    console.log(`paused: ${this.paused}`)
-
     if (this.paused) {
-      this.player.pause()
-    } else {
       this.player.currentTime = toFiexd(this.cursor, 2)
       this.player.play()
+    } else {
+      this.player.pause()
     }
   },
 
   playCurrent() {
     if (this.currentPlayIndex >= 0) {
       this.current = this.musicList[this.currentPlayIndex]
-      if (this.muted) {
-        this.toggleMuted()
+      if (this.paused) {
+        this.paused = false
+        this.player.play()
       }
-
-      this.player.play()
     } else {
       this.paused = true
       this.player.pause()
@@ -148,6 +172,7 @@ Alpine.store('data', {
     )
     console.log(`play music changed: ${this.currentPlayIndex} => ${idx}`)
     this.currentPlayIndex = idx
+    this.player.currentTime = 0
     this.paused = false
     this.playCurrent()
   },
@@ -159,6 +184,7 @@ Alpine.store('data', {
     )
     console.log(`play music changed: ${this.currentPlayIndex} => ${idx}`)
     this.currentPlayIndex = idx
+    this.player.currentTime = 0
 
     this.paused = false
     this.playCurrent()
@@ -180,36 +206,36 @@ Alpine.store('data', {
     return this.volume
   },
 
+  get progress() {
+    if (this.duration > 0) {
+      return Math.min(100, (this.cursor * 100) / this.duration)
+    }
+    return 0
+  },
+
   get muted() {
     return this.volume === 0
   },
 
   toggleMuted() {
-    this.player.muted = !this.player.muted
-    if (this.player.muted) {
-      this.preVolume = this.volume
-      this.volume = 0
+    if (this.player.volume > 0) {
+      this.player.volume = 0
     } else {
-      this.volume = this.preVolume || this.player.volume || 1
-      this.player.volume = this.volume
+      this.updateVolume(this.preVolume)
     }
-    console.log(`muted: ${this.muted} volume: ${this.volume}`)
   },
 
   updateVolume(volume: number) {
     volume = parseFloat(volume.toFixed(1))
-    console.log(`volume: ${volume}`)
-    this.volume = volume
     this.player.volume = volume
-    this.player.muted = this.muted
   },
 
   volumeUp() {
-    this.updateVolume(Math.min(this.volume + 0.1, 1))
+    this.updateVolume(Math.min(this.player.volume + 0.1, 1))
   },
 
   volumeDown() {
-    this.updateVolume(Math.max(this.volume - 0.1, 0))
+    this.updateVolume(Math.max(this.player.volume - 0.1, 0))
   },
 
   onClickProgressBar(event) {
@@ -230,12 +256,22 @@ Alpine.store('data', {
     return this.repeatMode.getMode() == RepeatMode.DEFAULT
   },
 
-  repeatModeIsRepeat(): boolean {
+  get repeatModeIsRepeat(): boolean {
     return this.repeatMode.getMode() == RepeatMode.REPEAT
   },
 
-  get repeatModeIsRandom(): boolean {
-    return this.repeatMode.getMode() == RepeatMode.RANDOM
+  get repeatModeIsRepeatOne(): boolean {
+    return this.repeatMode.getMode() == RepeatMode.REPEAT_ONE
+  },
+
+  get repeatModeIsShuffle(): boolean {
+    return this.repeatMode.getMode() == RepeatMode.SHUFFLE
+  },
+
+  formatTime(seconds: number) {
+    let m = `${Math.floor(seconds / 60)}`.padStart(2, '0')
+    let s = `${Math.floor(seconds % 60)}`.padStart(2, '0')
+    return `${m}:${s}`
   },
 })
 

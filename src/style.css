@@ -2,10 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-#app {
-  width: 480px;
+
+@media (min-width: 640px) {
+  #app {
+    width: 587px;
+  }
 }
 
 #player {
   display: none;
+}
+
+div[type="button"]:hover {
+  cursor: pointer;
+}
+
+.icon-muted {
+  mask: url(./img/muted.svg) no-repeat center
+}
+
+.icon-unmuted {
+  mask: url(./img/unmuted.svg) no-repeat center
+}
+
+.icon-play-next {
+  mask: url(./img/play-next.svg) no-repeat center
+}
+
+.icon-play-prev {
+  mask: url(./img/play-prev.svg) no-repeat center
+}
+
+.icon-paused {
+  width: 36px;
+  height: 36px;
+  mask: url(./img/paused.svg) no-repeat center
+}
+
+.icon-play {
+  width: 36px;
+  height: 36px;
+  margin-left: 10px;
+  mask: url(./img/play.svg) no-repeat center
+}
+
+.icon-repeat-1 {
+  mask: url(./img/repeat-1.svg) no-repeat center
+}
+
+.icon-repeat {
+  mask: url(./img/repeat.svg) no-repeat center
+}
+
+.icon-repeat-default {
+  mask: url(./img/repeat-default.svg) no-repeat center
+}
+
+.icon-repeat-shuffle {
+  mask: url(./img/repeat-shuffle.svg) no-repeat center
 }

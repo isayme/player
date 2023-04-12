@@ -1,14 +1,17 @@
 export enum RepeatMode {
   DEFAULT = 1,
   REPEAT,
-  RANDOM,
+  REPEAT_ONE,
+  SHUFFLE,
 }
 
 export function getRepeatMode(mode: RepeatMode): IRepeatMode {
   if (mode == RepeatMode.REPEAT) {
     return new RepeatModeRepeat()
-  } else if (mode == RepeatMode.RANDOM) {
-    return new RepeatModeRandom()
+  } else if (mode == RepeatMode.SHUFFLE) {
+    return new RepeatModeShuffle()
+  } else if (mode == RepeatMode.REPEAT_ONE) {
+    return new RepeatModeRepeatOne()
   } else {
     return new RepeatModeDefault()
   }
@@ -31,7 +34,8 @@ export class RepeatModeDefault implements IRepeatMode {
       return -1
     }
 
-    return (cur + delta) % total
+    delta = delta % total
+    return (cur + delta + total) % total
   }
 
   getPrevIndex(cur: number, total: number): number {
@@ -61,7 +65,12 @@ export class RepeatModeRepeat implements IRepeatMode {
       return -1
     }
 
-    return (cur + delta) % total
+    delta = delta % total
+    if (delta < 0) {
+      delta += total
+    }
+
+    return (cur + delta + total) % total
   }
 
   getPrevIndex(cur: number, total: number): number {
@@ -72,7 +81,7 @@ export class RepeatModeRepeat implements IRepeatMode {
     return this.playDelta(cur, total, 1)
   }
   getNextMode(): IRepeatMode {
-    return new RepeatModeRandom()
+    return new RepeatModeRepeatOne()
   }
 
   getMode() {
@@ -80,7 +89,25 @@ export class RepeatModeRepeat implements IRepeatMode {
   }
 }
 
-export class RepeatModeRandom implements IRepeatMode {
+export class RepeatModeRepeatOne implements IRepeatMode {
+  getPrevIndex(cur: number, _total: number): number {
+    return cur
+  }
+
+  getNextIndex(cur: number, _total: number): number {
+    return cur
+  }
+
+  getNextMode(): IRepeatMode {
+    return new RepeatModeShuffle()
+  }
+
+  getMode() {
+    return RepeatMode.REPEAT_ONE
+  }
+}
+
+export class RepeatModeShuffle implements IRepeatMode {
   playDelta(cur: number, total: number, _delta: number) {
     if (total <= 0) {
       return -1
@@ -110,6 +137,6 @@ export class RepeatModeRandom implements IRepeatMode {
   }
 
   getMode() {
-    return RepeatMode.RANDOM
+    return RepeatMode.SHUFFLE
   }
 }
