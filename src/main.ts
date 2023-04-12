@@ -105,7 +105,7 @@ Alpine.store('data', {
 
     this.player.currentTime = this.cursor
 
-    const resp = await fetch('/data.json')
+    const resp = await fetch('./data.json')
     if (resp.ok) {
       const { title, favicon, musicList } = await resp.json()
       if (title) {
