@@ -1,19 +1,16 @@
 export enum RepeatMode {
-  DEFAULT = 1,
-  REPEAT,
-  REPEAT_ONE,
+  LOOP = 1,
+  ONE,
   SHUFFLE,
 }
 
 export function getRepeatMode(mode: RepeatMode): IRepeatMode {
-  if (mode == RepeatMode.REPEAT) {
-    return new RepeatModeRepeat()
+  if (mode == RepeatMode.ONE) {
+    return new RepeatModeOne()
   } else if (mode == RepeatMode.SHUFFLE) {
     return new RepeatModeShuffle()
-  } else if (mode == RepeatMode.REPEAT_ONE) {
-    return new RepeatModeRepeatOne()
   } else {
-    return new RepeatModeDefault()
+    return new RepeatModeLoop()
   }
 }
 
@@ -24,38 +21,7 @@ export interface IRepeatMode {
   getMode(): RepeatMode
 }
 
-export class RepeatModeDefault implements IRepeatMode {
-  playDelta(cur: number, total: number, delta: number) {
-    if (cur < 0) {
-      cur = 0
-    }
-
-    if (total <= 0) {
-      return -1
-    }
-
-    delta = delta % total
-    return (cur + delta + total) % total
-  }
-
-  getPrevIndex(cur: number, total: number): number {
-    return this.playDelta(cur, total, -1)
-  }
-
-  getNextIndex(cur: number, total: number): number {
-    return this.playDelta(cur, total, 1)
-  }
-
-  getNextMode(): IRepeatMode {
-    return new RepeatModeRepeat()
-  }
-
-  getMode() {
-    return RepeatMode.DEFAULT
-  }
-}
-
-export class RepeatModeRepeat implements IRepeatMode {
+export class RepeatModeLoop implements IRepeatMode {
   playDelta(cur: number, total: number, delta: number) {
     if (cur < 0) {
       cur = 0
@@ -81,15 +47,15 @@ export class RepeatModeRepeat implements IRepeatMode {
     return this.playDelta(cur, total, 1)
   }
   getNextMode(): IRepeatMode {
-    return new RepeatModeRepeatOne()
+    return new RepeatModeOne()
   }
 
   getMode() {
-    return RepeatMode.REPEAT
+    return RepeatMode.LOOP
   }
 }
 
-export class RepeatModeRepeatOne implements IRepeatMode {
+export class RepeatModeOne implements IRepeatMode {
   getPrevIndex(cur: number, _total: number): number {
     return cur
   }
@@ -103,7 +69,7 @@ export class RepeatModeRepeatOne implements IRepeatMode {
   }
 
   getMode() {
-    return RepeatMode.REPEAT_ONE
+    return RepeatMode.ONE
   }
 }
 
@@ -133,7 +99,7 @@ export class RepeatModeShuffle implements IRepeatMode {
   }
 
   getNextMode(): IRepeatMode {
-    return new RepeatModeDefault()
+    return new RepeatModeLoop()
   }
 
   getMode() {

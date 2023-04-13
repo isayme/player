@@ -59,12 +59,8 @@ div[type="button"]:hover {
   mask: url(./img/repeat-1.svg) no-repeat center
 }
 
-.icon-repeat {
-  mask: url(./img/repeat.svg) no-repeat center
-}
-
-.icon-repeat-default {
-  mask: url(./img/repeat-default.svg) no-repeat center
+.icon-repeat-loop {
+  mask: url(./img/repeat-loop.svg) no-repeat center
 }
 
 .icon-repeat-shuffle {

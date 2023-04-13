@@ -263,16 +263,12 @@ Alpine.store('data', {
     console.log(`repeat-mode: ${this._repeatMode}`)
   },
 
-  get repeatModeIsDefault(): boolean {
-    return this.repeatMode.getMode() == RepeatMode.DEFAULT
+  get repeatModeIsLoop(): boolean {
+    return this.repeatMode.getMode() == RepeatMode.LOOP
   },
 
-  get repeatModeIsRepeat(): boolean {
-    return this.repeatMode.getMode() == RepeatMode.REPEAT
-  },
-
-  get repeatModeIsRepeatOne(): boolean {
-    return this.repeatMode.getMode() == RepeatMode.REPEAT_ONE
+  get repeatModeIsOne(): boolean {
+    return this.repeatMode.getMode() == RepeatMode.ONE
   },
 
   get repeatModeIsShuffle(): boolean {

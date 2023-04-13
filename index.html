@@ -127,15 +127,11 @@
           </div>
 
           <div type="button" @click="changeToNextRepeatMode">
-            <template x-if="repeatModeIsDefault">
-              <div class="w-6 h-6 bg-slate-500 icon-repeat-default"></div>
+            <template x-if="repeatModeIsLoop">
+              <div class="w-6 h-6 bg-slate-500 icon-repeat-loop"></div>
             </template>
 
-            <template x-if="repeatModeIsRepeat">
-              <div class="w-6 h-6 bg-slate-500 icon-repeat"></div>
-            </template>
-
-            <template x-if="repeatModeIsRepeatOne">
+            <template x-if="repeatModeIsOne">
               <div class="w-6 h-6 bg-slate-500 icon-repeat-1"></div>
             </template>
 
