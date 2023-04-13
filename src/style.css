@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --vh-100: 100vh;
+}
+
+.h-full-screen {
+  max-height: 100vh;
+  height: 100vh;
+  height: var(--vh-100);
+}
 
 @media (min-width: 640px) {
   #app {

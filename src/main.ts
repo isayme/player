@@ -6,6 +6,17 @@ import Alpine from 'alpinejs'
 import { getRepeatMode, RepeatMode } from './mode'
 import './style.css'
 
+function updateDocumentHeight() {
+  console.log(`height: ${window.innerHeight}`)
+  document.documentElement.style.setProperty(
+    '--vh-100',
+    `${window.innerHeight}px`,
+  )
+}
+
+updateDocumentHeight()
+window.addEventListener('resize', updateDocumentHeight)
+
 Alpine.plugin(persist)
 
 function toFiexd(f, n) {
