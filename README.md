@@ -6,4 +6,4 @@
 
 # 效果图
 
-![](./screenshoot.png)
+![](./screenshot.png)
