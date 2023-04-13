@@ -88,22 +88,20 @@
         class="bg-slate-50 text-slate-500 border rounded-b-xl flex items-center"
       >
         <div class="flex-auto flex items-center justify-evenly">
-          <div type="button" class="relative" @click="toggleMuted">
-            <div
-              class="hidden absolute m-1 h-1 w-20 bottom-7 -left-7 bg-neutral-200"
-              x-ref="volumebar"
-            >
-              <div class="h-full bg-cyan-500" style="width: 70%"></div>
-            </div>
-
-            <template x-if="muted">
-              <div class="w-6 h-6 bg-slate-500 icon-muted"></div>
+          <div type="button" @click="changeToNextRepeatMode">
+            <template x-if="repeatModeIsLoop">
+              <div class="w-6 h-6 bg-slate-500 icon-repeat-loop"></div>
             </template>
 
-            <template x-if="!muted">
-              <div class="w-6 h-6 bg-slate-500 icon-unmuted"></div>
+            <template x-if="repeatModeIsOne">
+              <div class="w-6 h-6 bg-slate-500 icon-repeat-1"></div>
+            </template>
+
+            <template x-if="repeatModeIsShuffle">
+              <div class="w-6 h-6 bg-slate-500 icon-repeat-shuffle"></div>
             </template>
           </div>
+
           <div type="button" class="sm:block xl:block" @click="playPrev">
             <div class="w-6 h-6 bg-slate-500 icon-play-prev"></div>
           </div>
@@ -126,17 +124,20 @@
             <div class="w-6 h-6 bg-slate-500 icon-play-next"></div>
           </div>
 
-          <div type="button" @click="changeToNextRepeatMode">
-            <template x-if="repeatModeIsLoop">
-              <div class="w-6 h-6 bg-slate-500 icon-repeat-loop"></div>
+          <div type="button" class="relative" @click="toggleMuted">
+            <div
+              class="hidden absolute m-1 h-1 w-20 bottom-7 -left-7 bg-neutral-200"
+              x-ref="volumebar"
+            >
+              <div class="h-full bg-cyan-500" style="width: 70%"></div>
+            </div>
+
+            <template x-if="muted">
+              <div class="w-6 h-6 bg-slate-500 icon-muted"></div>
             </template>
 
-            <template x-if="repeatModeIsOne">
-              <div class="w-6 h-6 bg-slate-500 icon-repeat-1"></div>
-            </template>
-
-            <template x-if="repeatModeIsShuffle">
-              <div class="w-6 h-6 bg-slate-500 icon-repeat-shuffle"></div>
+            <template x-if="!muted">
+              <div class="w-6 h-6 bg-slate-500 icon-unmuted"></div>
             </template>
           </div>
         </div>
