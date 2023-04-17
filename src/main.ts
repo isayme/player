@@ -23,6 +23,30 @@ function toFiexd(f, n) {
   return parseFloat(f.toFixed(n))
 }
 
+const wrapedLocalStorage = {
+  getItem(key) {
+    let value = localStorage.getItem(key)
+    if (value === null) {
+      return null
+    }
+
+    try {
+      // 确认可以解析
+      JSON.parse(value)
+      return value
+    } catch {
+      return null
+    }
+  },
+  setItem(key, value) {
+    if (value === undefined) {
+      return
+    }
+
+    localStorage.setItem(key, value)
+  },
+}
+
 Alpine.store('data', {
   // 页面标题
   title: '音乐播放器',
@@ -31,26 +55,29 @@ Alpine.store('data', {
   // 音乐列表
   musicList: [],
 
-  currentPlayIndex: Alpine.$persist(-1).as('x-listening'),
+  currentPlayIndex: Alpine.$persist(-1)
+    .as('x-listening')
+    .using(wrapedLocalStorage),
 
   // 是否暂停播放. chrome 不允许自动播放, 无需持久化此状态
   paused: true,
-  // paused: Alpine.$persist(false).as('x-paused'),
 
   // 循环模式
-  _repeatMode: Alpine.$persist(RepeatMode.LOOP).as('x-repeat-mode'),
+  _repeatMode: Alpine.$persist(RepeatMode.LOOP)
+    .as('x-repeat-mode')
+    .using(wrapedLocalStorage),
   repeatMode: null,
 
   // 当前播放的音乐
   current: {},
   // 当前播放时间
-  cursor: Alpine.$persist(0).as('x-cursor'),
+  cursor: Alpine.$persist(0).as('x-cursor').using(wrapedLocalStorage),
   // 当前音乐的总时长
   duration: 0,
 
   // 音量: [0-1]
-  volume: Alpine.$persist(1).as('x-volume'),
-  preVolume: Alpine.$persist(1).as('x-pre-volume'),
+  volume: Alpine.$persist(1).as('x-volume').using(wrapedLocalStorage),
+  preVolume: Alpine.$persist(1).as('x-pre-volume').using(wrapedLocalStorage),
 
   init() {
     this.repeatMode = getRepeatMode(this._repeatMode)
@@ -71,16 +98,30 @@ Alpine.store('data', {
   },
 
   async doInitPlayer() {
-    console.log(`init muted: ${this.muted}`)
-    console.log(`init volume: ${this.volume}`)
-    console.log(`init repeat-mode: ${this.repeatMode.getMode()}`)
+    if (isNaN(this.currentPlayIndex)) {
+      this.currentPlayIndex = -1
+    }
+
+    if (isNaN(this._repeatMode)) {
+      this._repeatMode = RepeatMode.LOOP
+    }
+
+    if (isNaN(this.cursor)) {
+      this.cursor = 0
+    }
 
     if (isNaN(this.volume) || this.volume < 0 || this.volume > 1) {
       this.volume = 1
     }
+    if (isNaN(this.preVolume) || this.preVolume < 0 || this.preVolume > 1) {
+      this.preVolume = 1
+    }
 
-    this.player.volume = this.getVolume()
-    this.volume = this.player.volume
+    console.log(`init muted: ${this.muted}`)
+    console.log(`init volume: ${this.volume}`)
+    console.log(`init repeat-mode: ${this.repeatMode.getMode()}`)
+
+    this.player.volume = this.volume
 
     this.player.ontimeupdate = () => {
       this.cursor = this.player.currentTime
@@ -199,22 +240,6 @@ Alpine.store('data', {
 
     this.paused = false
     this.playCurrent()
-  },
-
-  getVolume() {
-    if (isNaN(this.volume)) {
-      return 1
-    }
-
-    if (this.volume > 1) {
-      return 1
-    }
-
-    if (this.volume < 0) {
-      return 0
-    }
-
-    return this.volume
   },
 
   get progress() {
