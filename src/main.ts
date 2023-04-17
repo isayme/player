@@ -38,7 +38,7 @@ Alpine.store('data', {
   // paused: Alpine.$persist(false).as('x-paused'),
 
   // 循环模式
-  _repeatMode: Alpine.$persist(RepeatMode.DEFAULT).as('x-repeat-mode'),
+  _repeatMode: Alpine.$persist(RepeatMode.LOOP).as('x-repeat-mode'),
   repeatMode: null,
 
   // 当前播放的音乐
